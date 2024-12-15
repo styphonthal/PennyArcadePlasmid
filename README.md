@@ -3,10 +3,10 @@ A KDE Plasmid displaying Penny arcade comics. It reallys on cookies, so it may b
 
 Future plans:
 
--Add "next" button
--Add ability to check comics every 24hr
--Improve visual presentation
+- Add "next" button
+- Add ability to check comics every 24hr
+- Improve visual presentation
 
 Far future:
 
--Adding ability to use other comics
+- Adding ability to use other comics
