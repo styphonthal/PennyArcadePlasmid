@@ -1,0 +1,11 @@
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+    <kcfgfile name=""/>
+<group>
+    <name>General</name>
+    <description>General Settings</description>
+    <entry name="transparentBackground" type="Bool">
+        <label>Transparent Background</label>
+        <default>false</default>
+        <whatsthis>Enable or disable transparent background for the plasmoid.</whatsthis>
+    </entry>
+</group>

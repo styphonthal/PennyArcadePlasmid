@@ -1,7 +1,36 @@
-function fetchComic(date, isPrevious = false, previousComicUrl = null) {
+function checkForNewComicDaily() {
+    const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+
+    if (currentDate !== today) { // If the current comic is not for today
+        console.log("A new comic may be available. Loading today's comic...");
+        fetchComic("", false, null); // Fetch the comic for today (without specifying a date, it will default to today's comic)
+    } else {
+        console.log("Today's comic is already loaded.");
+    }
+}
+
+function fetchComic(date, isPrevious = false, previousComicUrl = null, isNext = false) {
+    // Build the URL using the provided date in YYYY/MM/DD format
     const baseUrl = "https://www.penny-arcade.com/comic/";
     const comicUrl = date ? `${baseUrl}${date}` : baseUrl;
-    const requestUrl = isPrevious && previousComicUrl ? `${previousComicUrl}?${Date.now()}` : comicUrl; // Cache busting
+
+    // Decide which comic to fetch based on previous/next flag
+    let requestUrl = comicUrl;
+    console.log("First step fetchcomic requesturl is", requestUrl);
+
+    if (isPrevious && previousComicUrl) {
+        requestUrl = `${previousComicUrl}?${Date.now()}`;  // Cache busting
+    } else if (isNext && previousComicUrl) {
+        // Extract the next comic URL from the page (if available)
+        const newerLinkMatch = previousComicUrl.match(/<a class="orange-btn newer" href="([^"]+)"/i);
+        if (newerLinkMatch) {
+            requestUrl = `https://www.penny-arcade.com${newerLinkMatch[1]}?${Date.now()}`;  // Full URL for next comic
+        } else {
+            requestUrl = comicUrl;  // Fallback to current comic if no next comic is found
+            console.log("FAILED TO GET NEWERLINKMATCH");
+        }
+    }
+    console.log("BEFORE GETTING IMAGE Request URL:", requestUrl);  // Log the URL
 
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -10,7 +39,7 @@ function fetchComic(date, isPrevious = false, previousComicUrl = null) {
         // Set the User-Agent to mimic a browser
         xhr.setRequestHeader("User-Agent", "Mozilla/5.0");
         xhr.setRequestHeader("Accept", "text/html");
-        xhr.setRequestHeader("Cookie", "PHPSESSID=f72l9tr0tof4frb0ml5euc7unv; _csrf=12b07e2add7af5470bb9ae32bb966c0e6475ec45ffa6dbb24c5b6b001a0dd33ea%3A2%3A%7Bi%3A0%3Bs%3A5%3A%22_csrf%22%3Bi%3A1%3Bs%3A32%3A%22hdsdlvCVEs8RtLU8vMcp1-AzqOXruksM%22%3B%7D");
+
 
         xhr.onload = () => {
             console.log(`Status: ${xhr.status}`);
@@ -23,46 +52,40 @@ function fetchComic(date, isPrevious = false, previousComicUrl = null) {
                 const titleMatch = responseText.match(/<meta property="og:title" content="([^"]+)"/i);
                 const ogImageMatch = responseText.match(/<meta property="og:image" content="([^"]+)"/i);
 
-
                 const olderLinkMatch = responseText.match(/<a class="orange-btn older" href="([^"]+)"/i);
-                const previousComicUrl = olderLinkMatch ? olderLinkMatch[1] : null;
+                const fullPreviousComicUrl = olderLinkMatch ? `https://www.penny-arcade.com${olderLinkMatch[1]}` : null;
 
-                const fullPreviousComicUrl = previousComicUrl ? `https://www.penny-arcade.com${previousComicUrl}` : null;
+                // Get the "newer" (next) comic URL
+                const newerLinkMatch = responseText.match(/<a class="orange-btn newer" href="([^"]+)"/i);
+                const fullNextComicUrl = newerLinkMatch ? `https://www.penny-arcade.com${newerLinkMatch[1]}` : null;
 
-                console.log("Previous Comic URL:", fullPreviousComicUrl); // Add this line to check the URL
+                console.log("Previous Comic URL:", fullPreviousComicUrl);  // Log extracted previous comic URL
+                console.log("Next Comic URL:", fullNextComicUrl);  // Log extracted next comic URL
 
-                // Extract description from <section class="post-text">
+                // Extract description
                 const descriptionMatch = responseText.match(/<section class="post-text">([\s\S]*?)<\/section>/i);
                 const description = descriptionMatch ? descriptionMatch[1] : null;
-
-                // Extract all <p> elements inside the description section
                 const paragraphs = description ? description.match(/<p>(.*?)<\/p>/g) : [];
-
-                const formattedDescription = paragraphs.map(p => {
-                    return p.replace(/<[^>]+>/g, '').trim();  // Remove HTML tags and trim the text
-                }).join("\n\n");
-
-                 console.log("Updated comic info", formattedDescription);
+                const formattedDescription = paragraphs.map(p => p.replace(/<(?!\/?p\b)[^>]+>/g, '').trim()).join("\n\n");
 
                 const comicInfo = {
                     url: ogUrlMatch && ogUrlMatch[1] ? ogUrlMatch[1] : null,
                     imageUrl: ogImageMatch && ogImageMatch[1] ? ogImageMatch[1] : null,
                     title: titleMatch && titleMatch[1] ? titleMatch[1] : "Penny Arcade Comic",
                     previousComicUrl: fullPreviousComicUrl,
+                    nextComicUrl: fullNextComicUrl,  // Include the next comic URL
                     description: formattedDescription
                 };
 
-
                 resolve(comicInfo);
-
             } else {
                 console.log("Failed to fetch page with status:", xhr.status);
                 reject("Comic information not found");
             }
-
         };
 
         xhr.onerror = () => {
+            console.log("Error during the request");
             reject("Network error");
         };
 
