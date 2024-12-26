@@ -1,5 +1,5 @@
 # PennyArcadePlasmid
-A KDE Plasmid displaying Penny arcade comics. It reallys on cookies, so it may be easily outdated.
+A KDE Plasmid displaying Penny arcade comics. It relies on cookies, so it may be easily outdated.
 
 Recent updates:
 - Added "next button"
