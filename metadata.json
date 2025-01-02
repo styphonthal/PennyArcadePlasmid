@@ -4,7 +4,7 @@
         "Authors": [
             {
                 "Email": "your-email@example.com",
-                "Name": "Spencer G"
+                "Name": "Spencer HG"
             }
         ],
         "BugReportUrl": "https://bugs.kde.org/enter_bug.cgi?product=plasmashell&component=Custom%20Widgets",
@@ -19,8 +19,8 @@
         "Icon": "preferences-system-time",
         "Id": "org.kde.PennyArcade",
         "License": "GPL-2.0+",
-        "Name": "Penny Arcade",
-        "Website": "https://yourwebsite.example.com"
+        "Name": "Penny Arcade comic displayter",
+        "Website": "https://github.com/styphonthal/PennyArcadePlasmid"
     },
     "X-Plasma-API-Minimum-Version": "6.0",
     "X-Plasma-Provides": [
